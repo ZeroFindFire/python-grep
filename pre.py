@@ -2,6 +2,10 @@
 
 import re 
 import os 
+def output(*argv):
+    s = " ".join(str(t) for t in argv)
+    import sys 
+    sys.stdout.write(s+"\n")
 def readfile(filepath):
     try:
         f = open(filepath,'r')
@@ -27,6 +31,7 @@ def link_path(path, filename):
         path = path + spt 
     return path + filename 
 def __search_filename(path, pattern, max_depth = -1):
+    check_quit()
     rst = []
     name = os.path.basename(path)
     path_type = "f" if os.path.isfile(path) else "d"
@@ -47,7 +52,7 @@ def __search_filename(path, pattern, max_depth = -1):
             tpath = link_path(path, it )
             rst += __search_filename(tpath, pattern, max_depth)
     except:
-        print("error: can't visit ", path)
+        output("error: can't visit ", path)
     finally:
         return rst 
 def compare_contents(string, pattern, line_mark = True):
@@ -74,6 +79,7 @@ def compare_contents(string, pattern, line_mark = True):
     return outs 
 
 def __search_filecontents(path, pattern, name_pattern, max_depth = -1):
+    check_quit()
     rst = []
     name = os.path.basename(path)
     if os.path.isfile(path):
@@ -96,7 +102,7 @@ def __search_filecontents(path, pattern, name_pattern, max_depth = -1):
             tpath = link_path(path, it )
             rst += __search_filecontents(tpath, pattern, name_pattern, max_depth)
     except:
-        print("error: can't visit ", path)
+        output("error: can't visit ", path)
     finally:
         return rst 
 def search_contents_input(pattern):
@@ -108,26 +114,41 @@ def search_contents_input(pattern):
     except:
         pass 
     match = compare_contents(contents,pattern,False)
-    print("result:")
-    print('\n'.join(match))
+    output("result:")
+    output('\n'.join(match))
     
 def search_name(path, pattern, max_depth = -1):
     pattern = re.compile(pattern)
     rst = __search_filename(path, pattern, max_depth)
-    print("result:")
-    print('\n'.join(rst))
+    output("result:")
+    output('\n'.join(rst))
 
 def search_contents(path, pattern, name_pattern = None, max_depth = -1):
     pattern = re.compile(pattern)
     if name_pattern is not None:
         name_pattern = re.compile(name_pattern)
     rst = __search_filecontents(path, pattern, name_pattern, max_depth)
-    print("result:")
-    print('\n'.join(rst))
-
+    output("result:")
+    output('\n'.join(rst))
+quit_mark = False
+def check_quit():
+    global quit_mark
+    if not quit_mark:
+        return 
+    import sys 
+    sys.exit()
+def check_input():
+    global quit_mark
+    try:
+        while True:
+            raw_input()
+    except:
+        quit_mark = True
 def main():
+    import threading
     import cmd 
     import sys 
+    thd = threading.Thread(target = check_input)
     ft = cmd.Filter(sys.argv[1:])
     lefts = ft.lefts("-")
     path = "."
@@ -143,10 +164,14 @@ def main():
         depth = int(sdepth)
     name_pattern = ft.get("-n")
     if ft.contain("-i"):
-        return search_contents_input(pattern)
+        search_contents_input(pattern)
     elif ft.contain('-c'):
-        return search_contents(path, pattern, name_pattern, depth)
+        thd.start()
+        search_contents(path, pattern, name_pattern, depth)
+        thd.join()
     else:
-        return search_name(path, pattern, depth)
+        thd.start()
+        search_name(path, pattern, depth)
+        thd.join()
 if __name__=='__main__':
     main()
