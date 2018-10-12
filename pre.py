@@ -139,8 +139,9 @@ def check_quit():
     sys.exit()
 def check_input():
     global quit_mark
+    global quit_thd_mark
     try:
-        while True:
+        while not quit_thd_mark:
             raw_input()
     except:
         quit_mark = True
@@ -156,6 +157,7 @@ order|python pre.py -i pattern
 
 pattern should be regular expression
 """
+
 def main():
     import threading
     import cmd 
@@ -178,15 +180,22 @@ def main():
     if sdepth is not None:
         depth = int(sdepth)
     name_pattern = ft.get("-n")
+    global quit_thd_mark 
+    quit_thd_mark = False
     if ft.contain("-i"):
         search_contents_input(pattern)
     elif ft.contain('-c'):
+        thd.setDaemon(True)
         thd.start()
         search_contents(path, pattern, name_pattern, depth)
-        thd.join()
+        quit_thd_mark = True
+        #thd.join()
     else:
+        thd.setDaemon(True)
         thd.start()
         search_name(path, pattern, depth)
-        thd.join()
+        quit_thd_mark = True
+        #thd.join()
+    sys.exit()
 if __name__=='__main__':
     main()
