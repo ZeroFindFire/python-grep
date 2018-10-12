@@ -34,9 +34,3 @@ def test():
     print("-v:", ft.gets("-v"))
 if __name__=="__main__":
     test()
-    import sys 
-    stdin = sys.stdin
-    while True:
-        if not stdin.isatty():
-            s = stdin.readline()
-            print "s:",s
