@@ -1,3 +1,7 @@
+Help:
+python pre.py -h
+python pre.py --help
+
 Find in path:
 python pre.py pattern [path] [-dn :depth = n]
 

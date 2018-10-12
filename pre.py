@@ -144,16 +144,31 @@ def check_input():
             raw_input()
     except:
         quit_mark = True
+helps = """
+Find in path:
+python pre.py pattern [path] [-dn :depth = n]
+
+Find in contents:
+python pre.py -c pattern [path] [-dn :depth = n] [-nexp :use expression exp to filter path]
+
+Find in input:
+order|python pre.py -i pattern
+
+pattern should be regular expression
+"""
 def main():
     import threading
     import cmd 
     import sys 
     thd = threading.Thread(target = check_input)
     ft = cmd.Filter(sys.argv[1:])
+    if ft.contain("-h") or ft.contain("--help"):
+        output(helps)
+        return 
     lefts = ft.lefts("-")
     path = "."
     if len(lefts)==0:
-        raise Exception("no pattern and path")
+        raise Exception("no pattern found")
     else:
         pattern = lefts[0]
         if len(lefts)>1:
